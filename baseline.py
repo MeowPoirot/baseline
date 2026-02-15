@@ -167,28 +167,27 @@ create_full_txt_files()
 
 !find /content/CamVid -name "*.png" | wc -l
 
-# ============ ЗАГРУЗКА ДАННЫХ ============
 download_full_camvid()
 create_full_txt_files()
 
-# ============ ПРОВЕРКА СОЗДАНИЯ ФАЙЛОВ ============
-print("\n🔍 ПРОВЕРКА ФАЙЛОВ ПОСЛЕ ЗАГРУЗКИ:")
+# ПРОВЕРКА СОЗДАНИЯ ФАЙЛОВ
+print("\n ПРОВЕРКА ФАЙЛОВ ПОСЛЕ ЗАГРУЗКИ:")
 data_dir = '/content/CamVid'
 if not os.path.exists(data_dir):
-    print(f"❌ Папка {data_dir} НЕ существует!")
+    print(f"Папка {data_dir} НЕ существует!")
 else:
-    print(f"✅ Папка {data_dir} существует")
+    print(f"Папка {data_dir} существует")
 
     for split in ['train', 'val', 'test']:
         txt_path = os.path.join(data_dir, f"{split}.txt")
         if os.path.exists(txt_path):
             with open(txt_path, 'r') as f:
                 lines = f.readlines()
-            print(f"✅ {split}.txt: {len(lines)} записей")
+            print(f"{split}.txt: {len(lines)} записей")
             if lines:
                 print(f"   Первая запись: {lines[0].strip()}")
         else:
-            print(f"❌ {split}.txt НЕ НАЙДЕН!")
+            print(f"{split}.txt НЕ НАЙДЕН!")
 
         # Проверим содержимое папок с изображениями и масками
         img_dir = os.path.join(data_dir, split)
@@ -405,7 +404,6 @@ class CamVidDataset(Dataset):
             if isinstance(mask, np.ndarray):
                 mask = torch.from_numpy(mask).long()
         else:
-            # Без трансформаций
             image = Image.fromarray(image).resize(self.img_size, Image.BILINEAR)
             image = np.array(image).astype(np.float32) / 255.0
             mask = Image.fromarray(mask).resize(self.img_size, Image.NEAREST)
@@ -550,7 +548,7 @@ class UNetModule(pl.LightningModule):
         )
 
         # Безопасное вычисление total_steps
-        total_steps = 1000  # Значение по умолчанию
+        total_steps = 1000
 
         if self.trainer and hasattr(self.trainer, 'estimated_stepping_batches'):
             if self.trainer.estimated_stepping_batches is not None:
@@ -592,7 +590,7 @@ num_workers = 2 if torch.cuda.is_available() else 0
 pin_memory = torch.cuda.is_available()
 
 # Путь к данным
-data_dir = '/content/CamVid'  # Измените при необходимости
+data_dir = '/content/CamVid'
 
 # Аугментации
 train_transform = get_train_augmentation_256()
@@ -766,15 +764,15 @@ print(f"Model parameters: {sum(p.numel() for p in unet_module.parameters()):,}")
 """
 
 checkpoint_callback = ModelCheckpoint(
-    monitor='val_iou_epoch',                # исправлено
+    monitor='val_iou_epoch',
     mode='max',
     save_top_k=1,
-    filename='unet-{epoch:02d}-{val_iou_epoch:.4f}',  # исправлено
+    filename='unet-{epoch:02d}-{val_iou_epoch:.4f}',
     save_last=True
 )
 
 early_stop_callback = EarlyStopping(
-    monitor='val_iou_epoch',                # исправлено
+    monitor='val_iou_epoch',
     mode='max',
     patience=10,
     verbose=True
